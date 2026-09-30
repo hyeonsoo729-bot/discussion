@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🪨 맷돌상담소 - 곰씨 고민 해결 토의 웹앱</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Gaegu (cute handwriting), Sunflower, Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Sunflower:wght@500;700&display=swap" rel="stylesheet">
+    <!-- html2canvas for High Quality Image Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                        cute: ['Gaegu', 'cursive'],
+                        title: ['Sunflower', 'sans-serif']
+                    },
+                    colors: {
+                        mill: {
+                            50: '#fdfbf7',
+                            100: '#f7f1e5',
+                            200: '#ebdcc3',
+                            300: '#d9bf98',
+                            400: '#c29f6d',
+                            500: '#a37c46',
+                            600: '#865f33',
+                            700: '#6b4825',
+                            800: '#53361d',
+                            900: '#3d2613'
+                        },
+                        bear: {
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            500: '#b45309',
+                            700: '#78350f',
+                        },
+                        pastel: {
+                            pink: '#fff1f2',
+                            pinkBorder: '#fecdd3',
+                            yellow: '#fefce8',
+                            yellowBorder: '#fef08a',
+                            blue: '#f0f9ff',
+                            blueBorder: '#bae6fd',
+                            green: '#f0fdf4',
+                            greenBorder: '#bbf7d0',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #f7f1e5;
+            background-image: radial-gradient(#e3d4bc 1.2px, transparent 1.2px);
+            background-size: 22px 22px;
+        }
+
+        .mill-card {
+            background: #ffffff;
+            border: 3px solid #d9bf98;
+            box-shadow: 0 8px 0 #c29f6d;
+            border-radius: 1.75rem;
+        }
+
+        .btn-action {
+            min-height: 52px;
+            touch-action: manipulation;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+        }
+
+        .btn-action:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+        }
+
+        .step-pill {
+            transition: all 0.2s;
+        }
+
+        .step-pill.active {
+            background-color: #865f33;
+            color: #ffffff;
+            font-weight: 800;
+            border-color: #53361d;
+            box-shadow: 0 3px 0 #53361d;
+        }
+
+        .step-pill.completed {
+            background-color: #d9bf98;
+            color: #53361d;
+            font-weight: 700;
+        }
+
+        .disc-substep-pill {
+            transition: all 0.2s;
+        }
+
+        .disc-substep-pill.active {
+            background-color: #f59e0b;
+            color: #ffffff;
+            font-weight: 900;
+            border-color: #b45309;
+            box-shadow: 0 3px 0 #b45309;
+        }
+
+        @keyframes bounceSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .bounce-bear {
+            animation: bounceSoft 2.5s infinite ease-in-out;
+        }
+
+        /* Cute Memo Pad & Speech Bubble Styling */
+        .cute-memo-card {
+            background-color: #fffefb;
+            background-image: linear-gradient(#f1e5d1 1px, transparent 1px);
+            background-size: 100% 2rem;
+            border: 3px solid #e2cbab;
+            box-shadow: 4px 6px 0px #d4b993;
+        }
+
+        .cute-speech-bubble {
+            position: relative;
+            background: #f0f9ff;
+            border: 3.5px solid #7dd3fc;
+            box-shadow: 4px 6px 0px #93c5fd;
+            border-radius: 2rem;
+        }
+
+        .cute-speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: 36px;
+            top: -18px;
+            border-width: 0 14px 18px 14px;
+            border-style: solid;
+            border-color: transparent transparent #7dd3fc transparent;
+            display: block;
+            width: 0;
+        }
+
+        .cute-speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: 39px;
+            top: -13px;
+            border-width: 0 11px 15px 11px;
+            border-style: solid;
+            border-color: transparent transparent #f0f9ff transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* Official Counsel Stamp Seal */
+        .stamp-official {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 18px;
+            border: 3px dashed #b45309;
+            background-color: rgba(254, 243, 199, 0.85);
+            color: #78350f;
+            font-weight: 900;
+            border-radius: 1.25rem;
+            transform: rotate(-3deg);
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.15);
+        }
+
+        /* Cute Sticker & Nametag Styles */
+        .nametag-sticker {
+            background: #ffffff;
+            border: 2px dashed #a37c46;
+            box-shadow: 3px 3px 0 #ebdcc3;
+            border-radius: 1rem;
+            transform: rotate(-1deg);
+        }
+
+        .star-btn {
+            transition: transform 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        .star-btn:hover {
+            transform: scale(1.25);
+        }
+        .star-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tape effect on memo corners */
+        .tape-deco {
+            position: absolute;
+            width: 70px;
+            height: 22px;
+            background-color: rgba(252, 211, 77, 0.6);
+            border: 1px dashed rgba(217, 119, 6, 0.4);
+            transform: rotate(-4deg);
+            top: -10px;
+            left: 50%;
+            margin-left: -35px;
+            z-index: 10;
+        }
+
+        /* Student Selection Buttons in Evaluation */
+        .member-tab-btn {
+            transition: all 0.2s ease;
+        }
+        .member-tab-btn.active {
+            background-color: #865f33;
+            color: #ffffff;
+            border-color: #3d2613;
+            box-shadow: 0 3px 0 #3d2613;
+        }
+        .member-tab-btn.done {
+            position: relative;
+        }
+        .member-tab-btn.done::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #10b981;
+            color: white;
+            border-radius: 999px;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Korean Word Wrap helper */
+        .keep-all {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Application Header -->
+    <header class="bg-mill-700 text-amber-50 sticky top-0 z-40 border-b-4 border-mill-900 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="goToStep(1)">
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-mill-400 text-bear-700 flex items-center justify-center text-2xl font-bold shadow-inner">
+                    🪨
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black font-title tracking-wide text-amber-100 flex items-center gap-2">
+                        「맷돌상담소」
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-200 text-mill-800 font-bold border border-amber-400">초등 4학년 국어 2학기 3. 의견을 모아서</span>
+                    </h1>
+                    <p class="text-xs text-amber-200 font-medium">
+                        오늘의 의뢰인: 🐻 곰씨의 고민 해결 어린이 상담소
+                    </p>
+                </div>
+            </div>
+
+            <!-- Header Quick Reset -->
+            <button onclick="confirmClearData()" class="bg-amber-800 hover:bg-amber-900 text-amber-100 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-amber-600">
+                <i class="fa-solid fa-rotate-left"></i> 처음부터 다시
+            </button>
+        </div>
+
+        <!-- Consultation Step Breadcrumbs - Enhanced Two Line Readable Alignment -->
+        <div class="bg-mill-800 px-2 py-2 border-t border-mill-600 overflow-x-auto">
+            <div class="max-w-6xl mx-auto flex items-center justify-between min-w-[860px] gap-1 px-1 text-xs font-bold">
+                <button onclick="goToStep(1)" id="navStep1" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">1단계</span>
+                    <span>상담소<br>입장</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(2)" id="navStep2" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">2단계</span>
+                    <span>곰씨<br>고민</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(3)" id="navStep3" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">3단계</span>
+                    <span>상담원<br>명단</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(4)" id="navStep4" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">4단계</span>
+                    <span>① 토의<br>주제</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(5)" id="navStep5" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">5단계</span>
+                    <span>② 의견<br>마련</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(6)" id="navStep6" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">6단계</span>
+                    <span>③ 의견<br>모으기</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(7)" id="navStep7" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">7단계</span>
+                    <span>④ 의견<br>결정</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(8)" id="navStep8" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">8단계</span>
+                    <span>맷돌<br>처방전</span>
+                </button>
+                <i class="fa-solid fa-chevron-right text-[10px] text-amber-200/40"></i>
+
+                <button onclick="goToStep(9)" id="navStep9" class="step-pill flex-1 py-1.5 px-1 rounded-xl border border-mill-600 bg-mill-700 text-amber-100 flex flex-col items-center justify-center leading-tight text-center">
+                    <span class="text-[10px] text-amber-300/80">9단계</span>
+                    <span>자기평가</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Container -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+        <!-- STEP 1: 맷돌상담소 문 열기 / 웰컴 메인 -->
+        <section id="step1" class="step-section mill-card p-6 sm:p-10 flex flex-col items-center text-center gap-6">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-100 border-2 border-mill-300 rounded-full text-mill-800 text-sm font-bold">
+                🪨 고민은 돌리고~ 마음은 풀고! 🌷
+            </div>
+
+            <!-- Storybook Bear SVG Illustration -->
+            <div class="relative py-2 flex justify-center items-center">
+                <div class="w-36 h-36 sm:w-44 sm:h-44 bounce-bear drop-shadow-xl">
+                    <svg viewBox="0 0 200 200" class="w-full h-full">
+                        <!-- Background Sage Green Circle Tone -->
+                        <circle cx="100" cy="100" r="92" fill="#dce6df" stroke="#b2c2b9" stroke-width="3"/>
+                        
+                        <!-- Left & Right Small Ears -->
+                        <path d="M 68 52 C 58 42, 48 55, 58 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 132 52 C 142 42, 152 55, 142 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                        
+                        <!-- White Bear Head & Neck (Pencil style stroke) -->
+                        <path d="M 60 70 C 58 45, 142 45, 140 70 C 138 100, 148 150, 150 185 L 50 185 C 52 150, 62 100, 60 70 Z" fill="#ffffff" stroke="#525b56" stroke-width="4.5" stroke-linejoin="round"/>
+                        
+                        <!-- Calm Gentle Eyes -->
+                        <ellipse cx="85" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                        <ellipse cx="115" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                        
+                        <!-- Soft Eyebrows -->
+                        <path d="M 80 78 Q 85 76 90 79" stroke="#525b56" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <path d="M 110 79 Q 115 76 120 78" stroke="#525b56" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        
+                        <!-- Dark Oval Nose -->
+                        <ellipse cx="100" cy="104" rx="7.5" ry="6" fill="#222825"/>
+                        
+                        <!-- Gentle Smile Line -->
+                        <path d="M 100 110 L 100 115 M 93 118 Q 100 123 107 118" stroke="#3a423e" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        
+                        <!-- Subtle Pink Cheeks -->
+                        <ellipse cx="73" cy="102" rx="6" ry="4" fill="#e8b4b8" opacity="0.4"/>
+                        <ellipse cx="127" cy="102" rx="6" ry="4" fill="#e8b4b8" opacity="0.4"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="space-y-3 max-w-2xl keep-all">
+                <h2 class="text-3xl sm:text-4xl font-black font-title text-mill-800">
+                    어서오세요! 「맷돌상담소」입니다
+                </h2>
+                <p class="text-base sm:text-lg text-slate-700 leading-relaxed font-medium">
+                    오늘 맷돌상담소에 <strong class="text-bear-500 font-extrabold">의뢰인 🐻 곰씨</strong>가 찾아왔어요.<br>
+                    여러분은 곰씨의 고민을 다정하게 들어주고 친구들과 함께 지혜를 모을 <strong class="text-mill-700 font-extrabold">멋진 어린이 상담원</strong>입니다!
+                </p>
+            </div>
+
+            <button onclick="goToStep(2)" class="btn-action w-full max-w-md bg-mill-600 hover:bg-mill-700 text-white font-black text-lg sm:text-xl py-4 rounded-2xl border-2 border-mill-800 flex items-center justify-center gap-3 active:scale-95 shadow-lg">
+                <span>🐻 곰씨 고민 사연 들으러 가기</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- STEP 2: 오늘의 의뢰인 곰씨의 사연 들여다보기 -->
+        <section id="step2" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-amber-100 pb-4">
+                <span class="px-3 py-1 bg-mill-200 text-mill-800 rounded-full font-black text-sm">2단계</span>
+                <h2 class="text-2xl font-black font-title text-mill-800">📋 곰씨의 고민</h2>
+            </div>
+
+            <div class="bg-amber-50/90 border-3 border-mill-300 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 shadow-inner">
+                <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                    <div class="w-32 h-32 bg-amber-100 rounded-3xl border-4 border-amber-300 p-2 flex items-center justify-center shadow-md bounce-bear">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <circle cx="100" cy="100" r="92" fill="#dce6df" stroke="#b2c2b9" stroke-width="3"/>
+                            <path d="M 68 52 C 58 42, 48 55, 58 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M 132 52 C 142 42, 152 55, 142 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M 60 70 C 58 45, 142 45, 140 70 C 138 100, 148 150, 150 185 L 50 185 C 52 150, 62 100, 60 70 Z" fill="#ffffff" stroke="#525b56" stroke-width="4.5" stroke-linejoin="round"/>
+                            <ellipse cx="85" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                            <ellipse cx="115" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                            <path d="M 80 78 Q 85 76 90 79" stroke="#525b56" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M 110 79 Q 115 76 120 78" stroke="#525b56" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <ellipse cx="100" cy="104" rx="7.5" ry="6" fill="#222825"/>
+                            <path d="M 100 110 L 100 115 M 93 118 Q 100 123 107 118" stroke="#3a423e" stroke-width="3" stroke-linecap="round" fill="none"/>
+                            <ellipse cx="73" cy="102" rx="6" ry="4" fill="#e8b4b8" opacity="0.4"/>
+                            <ellipse cx="127" cy="102" rx="6" ry="4" fill="#e8b4b8" opacity="0.4"/>
+                        </svg>
+                    </div>
+                    <span class="px-3 py-1 bg-bear-500 text-white text-xs font-bold rounded-xl shadow">의뢰인 : 곰씨</span>
+                </div>
+
+                <div class="p-6 flex-1 space-y-3 w-full bg-white rounded-3xl border-3 border-mill-300 shadow-sm relative">
+                    <div class="flex items-center justify-between border-b pb-2 border-amber-100">
+                        <span class="font-bold text-mill-800 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-heart text-bear-500"></i> 🐻 곰씨의 고민 사연
+                        </span>
+                    </div>
+                    <p class="text-lg sm:text-xl font-bold text-mill-900 leading-relaxed font-cute whitespace-pre-line keep-all">
+저는 토끼네 가족과 함께하는 시간이 좋아요.
+그런데 토끼네 가족이 너무 자주 찾아오고,
+제가 아끼는 꽃과 의자를 함부로 할 때가 있어요.
+싫다고 말하고 싶지만,
+그 말이 쉽게 나오지 않아요.
+“나는 친절한 곰인데…”
+요즘은 제 마음이 자꾸 힘들어져요.
+맷돌상담소에서 제 고민을 해결해 주세요.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-mill-100 border-2 border-mill-300 p-6 rounded-2xl text-center space-y-2 keep-all">
+                <h3 class="text-2xl sm:text-3xl font-black text-mill-900 font-title">
+                    🐻 곰씨에게 어떤 방법을 알려주면 좋을까요?
+                </h3>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="goToStep(1)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(3)" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    상담원 모둠 & 이름 입력 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 3: 모둠 및 모둠원 명단 설정 (태블릿 1대 공유용) -->
+        <section id="step3" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-amber-100 pb-4">
+                <span class="px-3 py-1 bg-mill-200 text-mill-800 rounded-full font-black text-sm">3단계</span>
+                <h2 class="text-2xl font-black font-title text-mill-800">🧑‍🤝‍🧑 우리 모둠 상담원 입력</h2>
+            </div>
+
+            <p class="text-sm text-slate-600 font-bold bg-amber-100/70 p-3.5 rounded-xl border border-amber-200 keep-all">
+                📱 이 태블릿을 함께 쓰는 모둠원들의 이름을 입력해 주세요! 마지막 평가에서 각자 이름을 골라 평가하게 됩니다.
+            </p>
+
+            <div class="max-w-2xl mx-auto w-full space-y-5">
+                <div class="space-y-2 bg-amber-50/70 p-5 rounded-2xl border border-mill-200">
+                    <label class="block font-bold text-mill-800 text-base">
+                        1. 우리 모둠 이름
+                    </label>
+                    <input type="text" id="groupNameInput" value="1모둠 햇살상담소" placeholder="예: 1모둠 햇살상담소" class="w-full p-3.5 rounded-xl border-2 border-mill-300 focus:border-mill-600 text-base font-bold outline-none bg-white">
+                </div>
+
+                <div class="space-y-3 bg-amber-50/70 p-5 rounded-2xl border border-mill-200">
+                    <label class="block font-bold text-mill-800 text-base flex items-center justify-between">
+                        <span>2. 모둠원 이름 (최대 4명)</span>
+                        <span class="text-xs text-mill-600 font-normal">각 학생의 이름을 적어 주세요.</span>
+                    </label>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-mill-700 mb-1 block text-center">상담원 1</span>
+                            <input type="text" id="memberName1" value="김돌돌" placeholder="이름 1" class="w-full p-3 rounded-xl border-2 border-mill-300 text-sm font-bold text-center bg-white">
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-mill-700 mb-1 block text-center">상담원 2</span>
+                            <input type="text" id="memberName2" value="이돌순" placeholder="이름 2" class="w-full p-3 rounded-xl border-2 border-mill-300 text-sm font-bold text-center bg-white">
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-mill-700 mb-1 block text-center">상담원 3</span>
+                            <input type="text" id="memberName3" value="곰다정" placeholder="이름 3" class="w-full p-3 rounded-xl border-2 border-mill-300 text-sm font-bold text-center bg-white">
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-mill-700 mb-1 block text-center">상담원 4</span>
+                            <input type="text" id="memberName4" value="최고씨" placeholder="이름 4" class="w-full p-3 rounded-xl border-2 border-mill-300 text-sm font-bold text-center bg-white">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <button onclick="goToStep(2)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="saveGroupAndNext()" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    토의 시작하기 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 4: ① 토의 주제 정하기 -->
+        <section id="step4" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="bg-amber-100/80 p-3.5 rounded-2xl border-2 border-amber-300 flex items-center justify-around gap-2 text-xs sm:text-sm font-bold">
+                <div class="disc-substep-pill active px-3 py-1.5 rounded-xl border">① 토의 주제 정하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">② 의견 마련하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">③ 의견 모으기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">④ 의견 결정하기</div>
+            </div>
+
+            <div class="space-y-6 text-center py-6">
+                <span class="px-4 py-1.5 bg-amber-200 text-mill-800 rounded-full font-black text-sm inline-block">
+                    1단계 : 오늘의 토의 주제
+                </span>
+
+                <div class="bg-amber-50 p-8 sm:p-10 rounded-3xl border-3 border-mill-300 space-y-4 max-w-2xl mx-auto shadow-sm">
+                    <span class="text-xs font-bold text-mill-700 uppercase tracking-widest">📌 오늘의 토의 주제</span>
+                    <!-- Improved readability with space-based clean line breaks -->
+                    <h2 class="text-2xl sm:text-3xl font-black font-title text-mill-900 leading-normal keep-all">
+                        🐻 곰씨의 고민을 해결할 수 있는<br class="hidden sm:inline"> 좋은 방법은 무엇일까요?
+                    </h2>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="goToStep(3)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(5)" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    ② 의견 마련하러 가기 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 5: ② 의견 마련하기 -->
+        <section id="step5" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="bg-amber-100/80 p-3.5 rounded-2xl border-2 border-amber-300 flex items-center justify-around gap-2 text-xs sm:text-sm font-bold">
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">① 토의 주제 정하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill active px-3 py-1.5 rounded-xl border">② 의견 마련하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">③ 의견 모으기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">④ 의견 결정하기</div>
+            </div>
+
+            <div class="text-center space-y-3 py-2">
+                <span class="px-4 py-1.5 bg-amber-200 text-mill-800 rounded-full font-black text-sm inline-block">
+                    2단계 : 각자 생각하기
+                </span>
+                <h3 class="text-2xl font-black font-title text-mill-900">
+                    💭 내 생각을 먼저 떠올려 봅시다.
+                </h3>
+            </div>
+
+            <div class="bg-amber-50/90 border-3 border-mill-300 rounded-3xl p-8 space-y-6 max-w-2xl mx-auto w-full text-center shadow-sm">
+                <div class="w-16 h-16 bg-amber-200 rounded-2xl text-bear-700 font-black text-3xl flex items-center justify-center mx-auto shadow-inner">
+                    💭
+                </div>
+                <h4 class="text-xl sm:text-2xl font-extrabold text-mill-900 leading-snug keep-all">
+                    곰씨의 고민을 해결할 방법은 무엇일까요?
+                </h4>
+                <p class="text-sm text-slate-600 font-medium bg-white p-4 rounded-2xl border border-amber-200 keep-all">
+                    * 친구들과 이야기하기 전에, 내 생각과 그 이유를 조용히 혼자 생각해보세요.
+                </p>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="goToStep(4)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(6)" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-black px-10 py-4 rounded-2xl text-base sm:text-lg flex items-center gap-2 active:scale-95 shadow-lg">
+                    <span>생각했어요! (모둠 토의 시작)</span>
+                    <i class="fa-solid fa-comments"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 6: ③ 의견 모으기 (질문 카드) -->
+        <section id="step6" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="bg-amber-100/80 p-3.5 rounded-2xl border-2 border-amber-300 flex items-center justify-around gap-2 text-xs sm:text-sm font-bold">
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">① 토의 주제 정하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">② 의견 마련하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill active px-3 py-1.5 rounded-xl border">③ 의견 모으기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">④ 의견 결정하기</div>
+            </div>
+
+            <div class="text-center space-y-2 py-2">
+                <span class="px-4 py-1.5 bg-amber-200 text-mill-800 rounded-full font-black text-sm inline-block">
+                    3단계 : 모둠 친구들과 직접 이야기하기
+                </span>
+                <h3 class="text-2xl font-black font-title text-mill-900">
+                    🗣️ 화면을 함께 보며 친구들과 실제로 말하고 들어보세요!
+                </h3>
+            </div>
+
+            <!-- 4 Cards with Distinct Colors, Larger Titles, and Specific Headings -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-4xl mx-auto w-full py-2">
+                <!-- Card 1: Warm Yellow/Amber -->
+                <div class="p-6 rounded-3xl bg-amber-100/90 border-3 border-amber-400 flex flex-col justify-between space-y-4 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">💡</span>
+                        <h4 class="text-2xl sm:text-3xl font-black text-amber-900 font-title">어떻게?</h4>
+                    </div>
+                    <p class="font-bold font-cute text-2xl sm:text-3xl text-amber-950 leading-relaxed">
+                        “어떻게 할 건지 자세히 말해 볼까요?”
+                    </p>
+                </div>
+
+                <!-- Card 2: Soft Pink/Rose -->
+                <div class="p-6 rounded-3xl bg-rose-100/90 border-3 border-rose-300 flex flex-col justify-between space-y-4 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🤔</span>
+                        <h4 class="text-2xl sm:text-3xl font-black text-rose-900 font-title">그런데?</h4>
+                    </div>
+                    <p class="font-bold font-cute text-2xl sm:text-3xl text-rose-950 leading-relaxed">
+                        “단점(어려운 점)은 없을까요?”
+                    </p>
+                </div>
+
+                <!-- Card 3: Soft Sky Blue -->
+                <div class="p-6 rounded-3xl bg-sky-100/90 border-3 border-sky-300 flex flex-col justify-between space-y-4 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🐰</span>
+                        <h4 class="text-2xl sm:text-3xl font-black text-sky-900 font-title">토끼라면?</h4>
+                    </div>
+                    <p class="font-bold font-cute text-2xl sm:text-3xl text-sky-950 leading-relaxed">
+                        “토끼는 어떻게 느낄까요?”
+                    </p>
+                </div>
+
+                <!-- Card 4: Soft Mint/Emerald -->
+                <div class="p-6 rounded-3xl bg-emerald-100/90 border-3 border-emerald-300 flex flex-col justify-between space-y-4 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">✨</span>
+                        <h4 class="text-2xl sm:text-3xl font-black text-emerald-900 font-title">해결될까?</h4>
+                    </div>
+                    <p class="font-bold font-cute text-2xl sm:text-3xl text-emerald-950 leading-relaxed">
+                        “정말 문제가 해결될 수 있을까요?”
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="goToStep(5)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(7)" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    ④ 의견 결정하기 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 7: ④ 의견 결정하기 -->
+        <section id="step7" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="bg-amber-100/80 p-3.5 rounded-2xl border-2 border-amber-300 flex items-center justify-around gap-2 text-xs sm:text-sm font-bold">
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">① 토의 주제 정하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">② 의견 마련하기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill px-3 py-1.5 rounded-xl border bg-white text-slate-500">③ 의견 모으기</div>
+                <i class="fa-solid fa-angle-right text-amber-400"></i>
+                <div class="disc-substep-pill active px-3 py-1.5 rounded-xl border">④ 의견 결정하기</div>
+            </div>
+
+            <div class="text-center space-y-2 py-2">
+                <span class="px-4 py-1.5 bg-amber-200 text-mill-800 rounded-full font-black text-sm inline-block">
+                    4단계 : 모둠의 최종 의견 결정
+                </span>
+                <h3 class="text-2xl sm:text-3xl font-black font-title text-mill-900">
+                    🐻 우리 모둠의 해결 방법을 결정해 봅시다.
+                </h3>
+            </div>
+
+            <div class="bg-amber-100/80 border-2 border-amber-300 rounded-2xl p-4 space-y-2 text-xs sm:text-sm">
+                <h4 class="font-bold text-mill-900 flex items-center gap-2">
+                    <i class="fa-solid fa-compass text-amber-700"></i> 의견을 결정할 때 참고할 점!
+                </h4>
+                <p class="text-slate-700 font-medium keep-all">
+                    • 실제로 할 수 있는 방법인가요? &nbsp;&nbsp;• 곰씨의 고민을 정말 해결할 수 있나요? &nbsp;&nbsp;• 곰씨와 토끼가 사이좋게 지내는 데 도움이 되나요?
+                </p>
+            </div>
+
+            <!-- Primary Inputs in Step 7 -->
+            <div class="bg-amber-50/90 rounded-3xl p-6 border-3 border-mill-300 space-y-5 shadow-sm">
+                <div class="space-y-2">
+                    <label class="block font-black text-mill-800 text-base">
+                        💡 1. 우리가 추천하는 해결 방법
+                    </label>
+                    <textarea id="step7MethodInput" rows="3" placeholder="곰씨의 고민을 해결하기 위해 우리 모둠이 정한 방법을 적어 보세요." class="w-full p-4 rounded-2xl border-2 border-mill-300 focus:border-mill-600 text-base sm:text-lg font-bold outline-none bg-white shadow-inner" oninput="syncInputsFromStep7()"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-black text-mill-800 text-base">
+                        🔎 2. 그렇게 생각한 까닭
+                    </label>
+                    <textarea id="step7ReasonInput" rows="3" placeholder="왜 이 방법이 곰씨의 고민을 해결할 수 있다고 생각했는지 적어 보세요." class="w-full p-4 rounded-2xl border-2 border-mill-300 focus:border-mill-600 text-base sm:text-lg font-bold outline-none bg-white shadow-inner" oninput="syncInputsFromStep7()"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="goToStep(6)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(8)" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    공식 처방전 완성하기 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 8: 최종 활동: 🐻 맷돌상담소 공식 처방전 -->
+        <section id="step8" class="step-section hidden mill-card p-4 sm:p-8 flex flex-col gap-6">
+            <div class="flex items-center justify-between border-b-2 border-amber-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-mill-200 text-mill-800 rounded-full font-black text-sm">8단계</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-title text-mill-800">📜 맷돌상담소 공식 처방전</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="downloadPrescriptionImage()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow border border-amber-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> 📥 맷돌 처방전 이미지로 저장하기
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-600 font-bold text-center bg-amber-100/60 p-3 rounded-xl border border-amber-200 keep-all">
+                ✏️ [의견 결정] 단계에서 작성한 해결 방법과 까닭이 자동으로 입력되었습니다. 아래에서 **곰씨가 토끼에게 할 말(대사)**을 적고 예쁜 처방전을 저장해 보세요!
+            </p>
+
+            <!-- Cute Prescription Card (Export Target 1) -->
+            <div id="prescriptionPaperCard" class="bg-amber-50/80 p-5 sm:p-8 rounded-3xl border-4 border-mill-400 space-y-6 relative overflow-hidden shadow-md my-1">
+                
+                <!-- Background Decorative Icons -->
+                <div class="absolute right-3 top-3 text-3xl opacity-20 pointer-events-none select-none">🌷</div>
+                <div class="absolute left-3 bottom-3 text-3xl opacity-20 pointer-events-none select-none">✏️</div>
+
+                <!-- Prescription Card Header -->
+                <div class="bg-white p-5 rounded-2xl border-3 border-mill-300 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left relative">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-400 p-1 flex items-center justify-center shadow-inner bounce-bear flex-shrink-0">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <circle cx="100" cy="100" r="92" fill="#dce6df" stroke="#b2c2b9" stroke-width="3"/>
+                                <path d="M 68 52 C 58 42, 48 55, 58 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M 132 52 C 142 42, 152 55, 142 68" fill="#ffffff" stroke="#525b56" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M 60 70 C 58 45, 142 45, 140 70 C 138 100, 148 150, 150 185 L 50 185 C 52 150, 62 100, 60 70 Z" fill="#ffffff" stroke="#525b56" stroke-width="4.5" stroke-linejoin="round"/>
+                                <ellipse cx="85" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                                <ellipse cx="115" cy="88" rx="3.5" ry="5" fill="#2c3330"/>
+                                <ellipse cx="100" cy="104" rx="7.5" ry="6" fill="#222825"/>
+                                <path d="M 100 110 L 100 115 M 93 118 Q 100 123 107 118" stroke="#3a423e" stroke-width="3" stroke-linecap="round" fill="none"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs font-black px-2.5 py-0.5 bg-amber-200 text-bear-700 rounded-full inline-block mb-1">🌷 맷돌상담소</span>
+                            <h3 class="text-2xl sm:text-3xl font-black font-title text-mill-900">
+                                🐻 곰씨에게 보내는 맷돌 처방전
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- Seal Badge -->
+                    <div class="stamp-official text-xs sm:text-sm">
+                        <span>🪨 맷돌상담소 완료</span>
+                        <i class="fa-solid fa-check ml-1 text-emerald-600"></i>
+                    </div>
+                </div>
+
+                <!-- Cute Nametag & Member Sticker Area -->
+                <div class="nametag-sticker p-4 text-xs sm:text-sm font-bold text-mill-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-mill-400">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 bg-amber-200 text-mill-900 rounded-xl font-black">🏷️ <span id="cardGroupName">1모둠 햇살상담소</span></span>
+                        <span class="text-mill-700 font-medium">상담 기록</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-mill-800">
+                        <span class="font-extrabold text-amber-800">👥 상담원 :</span>
+                        <span id="cardMemberList" class="font-bold text-mill-900">김돌돌 · 이돌순 · 곰다정 · 최고씨</span>
+                    </div>
+                </div>
+
+                <!-- Prescription Item 1: Auto-populated Solution Method from Step 7 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block font-black text-mill-900 text-base sm:text-lg flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-lg bg-amber-200 text-mill-800 text-sm font-extrabold">💡 ①</span>
+                            우리가 추천하는 해결 방법
+                        </label>
+                        <button onclick="goToStep(7)" class="text-xs font-bold text-mill-700 underline hover:text-mill-900">
+                            ✏️ 수정하기 (4단계)
+                        </button>
+                    </div>
+                    <div class="cute-memo-card rounded-2xl p-4 sm:p-5 relative">
+                        <div class="tape-deco"></div>
+                        <p id="rxMethodDisplay" class="font-cute text-xl sm:text-2xl font-bold leading-relaxed text-mill-900 whitespace-pre-line min-h-[3.5rem]">
+                            (의견 결정 단계에서 입력한 해결 방법이 이곳에 표시됩니다)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Prescription Item 2: Auto-populated Reason from Step 7 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block font-black text-mill-900 text-base sm:text-lg flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-lg bg-amber-200 text-mill-800 text-sm font-extrabold">🔎 ②</span>
+                            그렇게 생각한 까닭
+                        </label>
+                        <button onclick="goToStep(7)" class="text-xs font-bold text-mill-700 underline hover:text-mill-900">
+                            ✏️ 수정하기 (4단계)
+                        </button>
+                    </div>
+                    <div class="cute-memo-card rounded-2xl p-4 sm:p-5 relative">
+                        <div class="tape-deco"></div>
+                        <p id="rxReasonDisplay" class="font-cute text-xl sm:text-2xl font-bold leading-relaxed text-mill-900 whitespace-pre-line min-h-[3.5rem]">
+                            (의견 결정 단계에서 입력한 까닭이 이곳에 표시됩니다)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Prescription Item 3: Fresh Input for Bear's Speech to Rabbit -->
+                <div class="space-y-2 pt-2">
+                    <label class="block font-black text-mill-900 text-base sm:text-lg flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-lg bg-sky-200 text-sky-900 text-sm font-extrabold">💬 ③</span>
+                        곰씨가 토끼에게 할 말
+                    </label>
+                    <p class="text-xs text-slate-600 font-bold pl-1">
+                        “곰씨가 토끼에게 어떻게 말하면 좋을까요?”
+                    </p>
+
+                    <div class="cute-speech-bubble p-5 space-y-2">
+                        <div class="flex items-center gap-2 text-sky-900 font-extrabold text-sm">
+                            <span class="text-2xl">🐻</span>
+                            <span>곰씨가 토끼에게 전달할 이야기 대사 :</span>
+                        </div>
+                        <textarea id="rxSpeechInput" rows="3" placeholder="토끼야, " class="w-full bg-transparent font-cute text-xl sm:text-2xl font-bold leading-relaxed outline-none text-sky-950 resize-none" oninput="savePrescriptionState()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Prescription Footer Stamp Seal -->
+                <div class="pt-4 border-t-2 border-dashed border-mill-300 flex items-center justify-between text-xs font-bold text-mill-700">
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-heart text-rose-500"></i> 맷돌상담소 어린이 상담원 일동
+                    </span>
+                    <span>🐻 고민은 돌리고~ 마음은 풀고!</span>
+                </div>
+            </div>
+
+            <!-- Single Prescription Image Save CTA -->
+            <div class="flex flex-col items-center gap-2 pt-2">
+                <button onclick="downloadPrescriptionImage()" class="btn-action w-full max-w-lg bg-gradient-to-r from-amber-500 to-mill-600 hover:from-amber-600 hover:to-mill-700 text-white font-black text-lg sm:text-xl py-4 rounded-2xl border-2 border-mill-800 flex items-center justify-center gap-3 active:scale-95 shadow-xl">
+                    <i class="fa-solid fa-file-image text-2xl"></i>
+                    <span>📥 맷돌 처방전 이미지로 저장하기</span>
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center pt-4 border-t border-mill-200">
+                <button onclick="goToStep(7)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전
+                </button>
+                <button onclick="goToStep(9)" class="btn-action bg-mill-700 hover:bg-mill-800 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    자기평가 하러 가기 <i class="fa-solid fa-star"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STEP 9: 모둠원 각자 3성(⭐) 자기평가 & 별도 카드 이미지 저장 -->
+        <section id="step9" class="step-section hidden mill-card p-6 sm:p-8 flex flex-col gap-6">
+            <div class="flex items-center gap-3 border-b-2 border-amber-100 pb-4">
+                <span class="px-3 py-1 bg-mill-200 text-mill-800 rounded-full font-black text-sm">9단계</span>
+                <h2 class="text-2xl font-black font-title text-mill-800">⭐ 상담원 활동 돌아보기</h2>
+            </div>
+
+            <!-- Student Selector Tabs -->
+            <div class="bg-amber-50/90 border-2 border-amber-300 p-5 rounded-3xl space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <h3 class="font-black text-mill-900 text-base sm:text-lg flex items-center gap-2">
+                        <span>🐻</span> 상담원 활동을 돌아봅시다! 내 이름을 선택해 주세요.
+                    </h3>
+                    <span class="text-xs text-slate-500 font-bold">한 명씩 순서대로 별점을 누르고 저장합니다.</span>
+                </div>
+
+                <!-- Name Buttons rendered dynamically -->
+                <div id="memberTabContainer" class="flex flex-wrap gap-2 pt-1">
+                    <!-- Dynamic Member Buttons -->
+                </div>
+            </div>
+
+            <!-- Current Selected Student's Evaluation Form -->
+            <div id="evalFormBox" class="bg-white p-6 rounded-3xl border-3 border-mill-300 space-y-6 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-3 border-amber-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">👤</span>
+                        <h4 class="font-black text-xl text-mill-900">
+                            <span id="currentEvalMemberName" class="text-bear-700 underline underline-offset-4">김돌돌</span> 상담원의 평가
+                        </h4>
+                    </div>
+                    <span id="evalStatusBadge" class="text-xs px-3 py-1 rounded-full font-bold bg-amber-100 text-amber-800">
+                        작성 중
+                    </span>
+                </div>
+
+                <!-- Interactive 3-Star Evaluation Criteria -->
+                <div class="space-y-4">
+                    <!-- Criteria 1 -->
+                    <div class="p-4 bg-amber-50/70 rounded-2xl border border-mill-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <span class="text-sm font-bold text-slate-800">
+                            ① 💡 내 생각과 그 까닭을 말했어요.
+                        </span>
+                        <div class="flex items-center gap-3 self-end sm:self-auto">
+                            <div class="flex items-center gap-1.5 text-2xl" id="starContainer_q1">
+                                <!-- Star buttons injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Criteria 2 -->
+                    <div class="p-4 bg-amber-50/70 rounded-2xl border border-mill-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <span class="text-sm font-bold text-slate-800">
+                            ② 💬 친구의 생각에 궁금한 점을 묻고 이야기를 나누었어요.
+                        </span>
+                        <div class="flex items-center gap-3 self-end sm:self-auto">
+                            <div class="flex items-center gap-1.5 text-2xl" id="starContainer_q2">
+                                <!-- Star buttons injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Criteria 3 -->
+                    <div class="p-4 bg-amber-50/70 rounded-2xl border border-mill-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <span class="text-sm font-bold text-slate-800">
+                            ③ 👂 친구의 말을 귀 기울여 들었어요.
+                        </span>
+                        <div class="flex items-center gap-3 self-end sm:self-auto">
+                            <div class="flex items-center gap-1.5 text-2xl" id="starContainer_q3">
+                                <!-- Star buttons injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Member Evaluation Button -->
+                <div class="pt-2 flex justify-end">
+                    <button id="saveMemberEvalBtn" onclick="saveCurrentMemberEval()" class="btn-action bg-mill-600 hover:bg-mill-700 text-white font-black px-6 py-3 rounded-2xl text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>내 평가 저장하기</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Standalone Export Target: 📸 상담원 자기평가 기록 카드 -->
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-black text-mill-900 text-lg flex items-center gap-2">
+                        <span>📸</span> 맷돌상담소 상담원 활동 기록 카드
+                    </h3>
+                    <span class="text-xs text-slate-500 font-bold">처방전과 별개로 저장되는 모둠 개별 평가 결과물입니다.</span>
+                </div>
+
+                <!-- Dedicated Evaluation Export Card -->
+                <div id="evalCardToExport" class="bg-amber-50/90 p-6 sm:p-8 rounded-3xl border-4 border-mill-300 space-y-5 relative shadow-md bg-white">
+                    <div class="flex items-center justify-between border-b-2 border-mill-200 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🌷</span>
+                            <div>
+                                <h4 class="text-xl sm:text-2xl font-black font-title text-mill-900">
+                                    🐻 맷돌상담소 상담원 활동 돌아보기
+                                </h4>
+                                <p id="evalCardGroupName" class="text-xs font-bold text-mill-700">
+                                    모둠 : 1모둠 햇살상담소
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-xs font-black px-3 py-1 bg-amber-200 text-mill-900 rounded-full border border-amber-300">
+                            학습 자기평가
+                        </div>
+                    </div>
+
+                    <!-- Table of Member Star Results -->
+                    <div id="evalCardMembersList" class="space-y-3">
+                        <!-- Rendered via JS -->
+                    </div>
+
+                    <div class="pt-3 border-t border-dashed border-mill-200 flex items-center justify-between text-xs font-bold text-mill-600">
+                        <span>🪨 맷돌상담소 토의 활동 기록</span>
+                    </div>
+                </div>
+
+                <!-- Standalone Evaluation Download Button -->
+                <button onclick="downloadEvalSummaryImage()" class="btn-action w-full bg-gradient-to-r from-amber-600 to-mill-700 hover:from-amber-700 hover:to-mill-800 text-white font-black text-lg sm:text-xl py-4 rounded-2xl border-2 border-mill-900 flex items-center justify-center gap-3 active:scale-95 shadow-xl mt-2">
+                    <i class="fa-solid fa-file-arrow-down text-2xl"></i>
+                    <span>📥 상담원 자기평가 이미지로 저장하기</span>
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <button onclick="goToStep(8)" class="btn-action bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> 이전 (처방전)
+                </button>
+                <button onclick="goToStep(1)" class="btn-action bg-mill-700 hover:bg-mill-800 text-white font-black px-8 py-3.5 rounded-2xl text-base flex items-center gap-2">
+                    <i class="fa-solid fa-house"></i> 첫 화면으로
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-mill-800 border-t-2 border-mill-900 py-4 px-4 text-center text-xs text-amber-200 font-medium mt-8">
+        <p>🪨 맷돌상담소 • 초등학교 4학년 국어 2학기 3. 의견을 모아서 곰씨 고민 해결 토의 학습도구</p>
+    </footer>
+
+    <script>
+        // Application State
+        let appState = {
+            currentStep: 1,
+            groupName: "1모둠 햇살상담소",
+            members: ["김돌돌", "이돌순", "곰다정", "최고씨"],
+            selectedMemberIndex: 0,
+            prescription: {
+                method: "",
+                reason: "",
+                speech: ""
+            },
+            memberEvaluations: {}
+        };
+
+        // Numerical Scores (1, 2, or 3)
+        let currentTempScores = { q1: 0, q2: 0, q3: 0 };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            updateStepView();
+            initMemberEvaluations();
+            renderStep9UI();
+        });
+
+        // Sync inputs between Step 7 & Step 8
+        function syncInputsFromStep7() {
+            const m = document.getElementById('step7MethodInput').value;
+            const r = document.getElementById('step7ReasonInput').value;
+            
+            appState.prescription.method = m;
+            appState.prescription.reason = r;
+
+            const rxDispM = document.getElementById('rxMethodDisplay');
+            const rxDispR = document.getElementById('rxReasonDisplay');
+            if(rxDispM) rxDispM.innerText = m || "(의견 결정 단계에서 입력한 해결 방법이 이곳에 표시됩니다)";
+            if(rxDispR) rxDispR.innerText = r || "(의견 결정 단계에서 입력한 까닭이 이곳에 표시됩니다)";
+
+            saveToLocalStorage();
+        }
+
+        function savePrescriptionState() {
+            appState.prescription.speech = document.getElementById('rxSpeechInput').value;
+            saveToLocalStorage();
+        }
+
+        // Local Storage Handler
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('mill_counsel_state_v6', JSON.stringify(appState));
+            } catch (e) {
+                console.error('LocalStorage save error', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('mill_counsel_state_v6');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+
+                    document.getElementById('groupNameInput').value = appState.groupName || '1모둠 햇살상담소';
+                    
+                    if (appState.members && appState.members.length >= 4) {
+                        for (let i = 1; i <= 4; i++) {
+                            const el = document.getElementById(`memberName${i}`);
+                            if (el) el.value = appState.members[i-1] || '';
+                        }
+                    }
+
+                    document.getElementById('rxSpeechInput').value = appState.prescription.speech || '';
+                    
+                    const s7m = document.getElementById('step7MethodInput');
+                    const s7r = document.getElementById('step7ReasonInput');
+                    if(s7m) s7m.value = appState.prescription.method || '';
+                    if(s7r) s7r.value = appState.prescription.reason || '';
+                }
+            } catch (e) {
+                console.error('LocalStorage load error', e);
+            }
+        }
+
+        function saveGroupAndNext() {
+            const gName = document.getElementById('groupNameInput').value.trim() || "1모둠";
+            appState.groupName = gName;
+
+            const mList = [];
+            for (let i = 1; i <= 4; i++) {
+                const val = document.getElementById(`memberName${i}`).value.trim();
+                if (val) mList.push(val);
+            }
+            appState.members = mList.length > 0 ? mList : ["김돌돌", "이돌순", "곰다정", "최고씨"];
+            
+            initMemberEvaluations();
+            saveToLocalStorage();
+            goToStep(4);
+        }
+
+        function initMemberEvaluations() {
+            if (!appState.memberEvaluations) appState.memberEvaluations = {};
+            appState.members.forEach(mName => {
+                if (!appState.memberEvaluations[mName]) {
+                    appState.memberEvaluations[mName] = { q1: 0, q2: 0, q3: 0, isLocked: false };
+                }
+            });
+        }
+
+        // Navigation Controller
+        function goToStep(stepNum) {
+            appState.currentStep = stepNum;
+            updateStepView();
+            saveToLocalStorage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateStepView() {
+            for (let i = 1; i <= 9; i++) {
+                const pill = document.getElementById(`navStep${i}`);
+                if (!pill) continue;
+                pill.classList.remove('active', 'completed');
+                if (i === appState.currentStep) {
+                    pill.classList.add('active');
+                } else if (i < appState.currentStep) {
+                    pill.classList.add('completed');
+                }
+            }
+
+            document.querySelectorAll('.step-section').forEach(sec => sec.classList.add('hidden'));
+            const currentSec = document.getElementById(`step${appState.currentStep}`);
+            if (currentSec) currentSec.classList.remove('hidden');
+
+            if (appState.currentStep === 8 || appState.currentStep === 9) {
+                const cardGName = document.getElementById('cardGroupName');
+                const cardMList = document.getElementById('cardMemberList');
+                if (cardGName) cardGName.innerText = appState.groupName;
+                if (cardMList) cardMList.innerText = appState.members.join(' · ');
+                
+                // Update step 8 prescription text display from step 7 state
+                const rxDispM = document.getElementById('rxMethodDisplay');
+                const rxDispR = document.getElementById('rxReasonDisplay');
+                if(rxDispM) rxDispM.innerText = appState.prescription.method || "(의견 결정 단계에서 입력한 해결 방법이 이곳에 표시됩니다)";
+                if(rxDispR) rxDispR.innerText = appState.prescription.reason || "(의견 결정 단계에서 입력한 까닭이 이곳에 표시됩니다)";
+            }
+
+            if (appState.currentStep === 9) {
+                renderStep9UI();
+            }
+        }
+
+        function renderStep9UI() {
+            const container = document.getElementById('memberTabContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            appState.members.forEach((mName, idx) => {
+                const evalData = appState.memberEvaluations[mName] || { isLocked: false };
+                const btn = document.createElement('button');
+                btn.className = `member-tab-btn px-4 py-2.5 rounded-2xl border-2 text-xs sm:text-sm font-bold flex items-center gap-1.5 ${
+                    idx === appState.selectedMemberIndex 
+                        ? 'active bg-mill-700 text-white border-mill-900 shadow' 
+                        : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-100'
+                } ${evalData.isLocked ? 'done' : ''}`;
+                
+                btn.innerHTML = `<span>👤 ${mName}</span> ${evalData.isLocked ? '<span class="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">완료</span>' : ''}`;
+                btn.onclick = () => selectMemberForEval(idx);
+                container.appendChild(btn);
+            });
+
+            const activeMember = appState.members[appState.selectedMemberIndex] || appState.members[0];
+            document.getElementById('currentEvalMemberName').innerText = activeMember;
+
+            const memberData = appState.memberEvaluations[activeMember] || { q1: 0, q2: 0, q3: 0, isLocked: false };
+            currentTempScores = { q1: memberData.q1 || 0, q2: memberData.q2 || 0, q3: memberData.q3 || 0 };
+
+            const statusBadge = document.getElementById('evalStatusBadge');
+            const saveBtn = document.getElementById('saveMemberEvalBtn');
+
+            if (memberData.isLocked) {
+                statusBadge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                statusBadge.innerText = "저장 완료 (수정 불가)";
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                statusBadge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-300";
+                statusBadge.innerText = "작성 중";
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            renderStarRatingUI('q1', currentTempScores.q1, memberData.isLocked);
+            renderStarRatingUI('q2', currentTempScores.q2, memberData.isLocked);
+            renderStarRatingUI('q3', currentTempScores.q3, memberData.isLocked);
+
+            renderEvalExportCard();
+        }
+
+        function selectMemberForEval(idx) {
+            appState.selectedMemberIndex = idx;
+            renderStep9UI();
+        }
+
+        // 3-Star Rating Handler
+        function setStarScore(qKey, score) {
+            const activeMember = appState.members[appState.selectedMemberIndex];
+            const memberData = appState.memberEvaluations[activeMember];
+            if (memberData && memberData.isLocked) return;
+
+            currentTempScores[qKey] = score;
+            renderStarRatingUI(qKey, score, false);
+        }
+
+        function renderStarRatingUI(qKey, currentScore, isLocked) {
+            const container = document.getElementById(`starContainer_${qKey}`);
+            if (!container) return;
+
+            container.innerHTML = '';
+            for (let starIdx = 1; starIdx <= 3; starIdx++) {
+                const starBtn = document.createElement('span');
+                starBtn.className = `star-btn ${starIdx <= currentScore ? 'text-amber-500' : 'text-slate-300'}`;
+                starBtn.innerHTML = starIdx <= currentScore ? '⭐' : '☆';
+                if (!isLocked) {
+                    starBtn.onclick = () => setStarScore(qKey, starIdx);
+                }
+                container.appendChild(starBtn);
+            }
+        }
+
+        function saveCurrentMemberEval() {
+            const activeMember = appState.members[appState.selectedMemberIndex];
+            if (!currentTempScores.q1 || !currentTempScores.q2 || !currentTempScores.q3) {
+                alert("3가지 질문 항목에 대해 별점(⭐)을 모두 선택해 주세요!");
+                return;
+            }
+
+            appState.memberEvaluations[activeMember] = {
+                q1: currentTempScores.q1,
+                q2: currentTempScores.q2,
+                q3: currentTempScores.q3,
+                isLocked: true
+            };
+
+            saveToLocalStorage();
+            renderStep9UI();
+        }
+
+        // Render Dedicated Evaluation Export Card
+        function renderEvalExportCard() {
+            const cardGroupName = document.getElementById('evalCardGroupName');
+            if (cardGroupName) cardGroupName.innerText = `모둠 : ${appState.groupName}`;
+
+            const listContainer = document.getElementById('evalCardMembersList');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            const formatStars = (score) => {
+                if (score === 1) return '<span class="text-amber-500">⭐</span><span class="text-slate-300">☆☆</span>';
+                if (score === 2) return '<span class="text-amber-500">⭐⭐</span><span class="text-slate-300">☆</span>';
+                if (score === 3) return '<span class="text-amber-500">⭐⭐⭐</span>';
+                return '<span class="text-slate-400">미작성</span>';
+            };
+
+            appState.members.forEach(mName => {
+                const data = appState.memberEvaluations[mName] || { q1: 0, q2: 0, q3: 0, isLocked: false };
+                const row = document.createElement('div');
+                row.className = "p-3 bg-amber-50/60 rounded-2xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm font-bold";
+                
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 min-w-[120px]">
+                        <span class="text-base">👤</span>
+                        <span class="text-mill-900 font-extrabold text-sm sm:text-base">${mName}</span>
+                        ${data.isLocked ? '<span class="text-[10px] text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-md font-extrabold">완료</span>' : '<span class="text-[10px] text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-md font-extrabold">작성 중</span>'}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 bg-white p-2.5 rounded-xl border border-amber-100">
+                        <div>💡 내 생각 말하기: ${formatStars(data.q1)}</div>
+                        <div>💬 질문하며 토의: ${formatStars(data.q2)}</div>
+                        <div>👂 귀 기울여 듣기: ${formatStars(data.q3)}</div>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        // 1. Download Prescription Image Only
+        async function downloadPrescriptionImage() {
+            const paperCard = document.getElementById('prescriptionPaperCard');
+            if (!paperCard) return;
+
+            try {
+                const canvas = await html2canvas(paperCard, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#fffdfa"
+                });
+
+                const imageURI = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                const safeName = (appState.groupName || "1모둠").replace(/[^a-zA-Z0-9가-힣]/g, "_");
+                link.download = `맷돌상담소_공식처방전_${safeName}.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Prescription download error:", err);
+            }
+        }
+
+        // 2. Download Self-Evaluation Card Image Only
+        async function downloadEvalSummaryImage() {
+            const evalCard = document.getElementById('evalCardToExport');
+            if (!evalCard) return;
+
+            try {
+                const canvas = await html2canvas(evalCard, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                });
+
+                const imageURI = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                const safeName = (appState.groupName || "1모둠").replace(/[^a-zA-Z0-9가-힣]/g, "_");
+                link.download = `맷돌상담소_상담원자기평가_${safeName}.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Evaluation summary download error:", err);
+            }
+        }
+
+        function confirmClearData() {
+            if (confirm("정말로 모든 작성 내용을 지우고 처음부터 다시 시작하시겠습니까?")) {
+                localStorage.removeItem('mill_counsel_state_v6');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
